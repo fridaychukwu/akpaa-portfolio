@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>a regional agribusiness operator — Farm &amp; Supply Chain Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#10150f; --panel:#171f15; --panel2:#1c261a; --border:#2b3a27;
+    --text:#eaf2e6; --muted:#8fa088; --accent:#9ccc3c; --accent2:#d9a441;
+    --good:#7ddc6a; --bad:#ff7b6b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#141d11,#10150f);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));}
+  .brand h1{font-size:18px;margin:0;font-weight:600;}
+  .brand span{color:var(--muted);font-size:12px;}
+  .tabs{display:flex;gap:6px;}
+  .tab{padding:8px 14px;border-radius:6px;font-size:13px;color:var(--muted);}
+  .tab.active{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+  .filters{display:flex;gap:10px;padding:14px 28px 0 28px;}
+  .chip{background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:20px;}
+  .chip.on{color:var(--accent);border-color:var(--accent);}
+  .grid{padding:18px 28px 28px 28px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .kpi{grid-column:span 3;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .kpi .value{font-size:24px;font-weight:700;margin-top:6px;}
+  .kpi .delta{font-size:12px;margin-top:4px;}
+  .delta.up{color:var(--good);} .delta.down{color:var(--bad);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .card h3{margin:0 0 10px 0;font-size:14px;font-weight:600;}
+  .card .sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .span4{grid-column:span 4;} .span6{grid-column:span 6;} .span8{grid-column:span 8;} .span12{grid-column:span 12;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);}
+  td{padding:6px 8px;border-bottom:1px solid #1f2a1c;}
+  .foot{padding:14px 28px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div><h1>a regional agribusiness operator</h1><span>Farm Operations &amp; Supply Chain Dashboard</span></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Crop Operations</div>
+      <div class="tab">Livestock</div>
+      <div class="tab">Logistics</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="chip on">Current Season</div>
+    <div class="chip">All Regions</div>
+    <div class="chip">All Crops</div>
+  </div>
+
+  <div class="grid">
+    <div class="kpi"><div class="label">Cultivated Area</div><div class="value">1,480 ha</div><div class="delta up">▲ 6.1% YoY</div></div>
+    <div class="kpi"><div class="label">Total Harvest</div><div class="value">6,840 t</div><div class="delta up">▲ 9.7% YoY</div></div>
+    <div class="kpi"><div class="label">Avg Yield</div><div class="value">4.62 t/ha</div><div class="delta up">▲ 5.4%</div></div>
+    <div class="kpi"><div class="label">Gross Margin</div><div class="value">38.2%</div><div class="delta down">▼ 1.2 pts</div></div>
+
+    <div class="card span8">
+      <h3>Yield by Crop &amp; Irrigation Type</h3>
+      <div class="sub">Tons per hectare, irrigated vs rain-fed fields</div>
+      <canvas id="yieldBar" style="max-height:280px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Cultivated Area Share by Crop</h3>
+      <canvas id="cropPie" style="max-height:280px;"></canvas>
+    </div>
+
+    <div class="card span4">
+      <h3>Revenue by Region</h3>
+      <canvas id="regionBar" style="max-height:240px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Livestock Revenue Mix</h3>
+      <canvas id="livestockDonut" style="max-height:240px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Logistics — On-Time Delivery by Route</h3>
+      <table>
+        <tr><th>Route</th><th>Shipments</th><th>On-Time</th></tr>
+        <tr><td>Northern Route</td><td>184</td><td style="color:#7ddc6a">94.2%</td></tr>
+        <tr><td>Central Route</td><td>162</td><td style="color:#7ddc6a">91.8%</td></tr>
+        <tr><td>Eastern Route</td><td>140</td><td>86.5%</td></tr>
+        <tr><td>Coastal Route</td><td>98</td><td style="color:#ff7b6b">68.4%</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot">a regional agribusiness operator — Power BI–style farm &amp; supply chain dashboard, prepared by the Agronomy and Supply Chain Analytics teams.</div>
+
+<script>
+Chart.defaults.color = '#8fa088';
+Chart.defaults.borderColor = '#2b3a27';
+Chart.defaults.font.family = "Segoe UI, Arial, sans-serif";
+
+new Chart(document.getElementById('yieldBar'), {
+  type:'bar',
+  data:{labels:['Maize','Soybean','Wheat','Rice','Sorghum'],
+        datasets:[
+          {label:'Irrigated', data:[6.1,3.6,3.8,6.7,3.3], backgroundColor:'#9ccc3c'},
+          {label:'Rain-fed', data:[4.6,2.7,2.9,5.0,2.5], backgroundColor:'#d9a441'},
+        ]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}, scales:{y:{title:{display:true,text:'t/ha'}}}}
+});
+
+new Chart(document.getElementById('cropPie'), {
+  type:'doughnut',
+  data:{labels:['Maize','Soybean','Wheat','Rice','Sorghum'],
+        datasets:[{data:[420,310,260,330,160], backgroundColor:['#9ccc3c','#d9a441','#7ddc6a','#5b8fd1','#c97b4a']}]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}}
+});
+
+new Chart(document.getElementById('regionBar'), {
+  type:'bar',
+  data:{labels:['Northern Plains','River Valley','Eastern Highlands','Southern Delta'],
+        datasets:[{label:'Revenue ($K)', data:[890,760,540,420], backgroundColor:'#9ccc3c'}]},
+  options:{plugins:{legend:{display:false}}, indexAxis:'y'}
+});
+
+new Chart(document.getElementById('livestockDonut'), {
+  type:'doughnut',
+  data:{labels:['Dairy Cattle','Beef Cattle','Poultry (Broiler)','Poultry (Layer)','Swine'],
+        datasets:[{data:[31,24,20,14,11], backgroundColor:['#5b8fd1','#9ccc3c','#d9a441','#7ddc6a','#c97b4a']}]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}}
+});
+</script>
+</body>
+</html>

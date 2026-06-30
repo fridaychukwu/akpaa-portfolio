@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>a multinational retail group — Sales &amp; Marketing Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#11151c; --panel:#171d27; --panel2:#1d2430; --border:#2a3242;
+    --text:#e8ecf2; --muted:#8b95a7; --accent:#ff6f3c; --accent2:#3aa6ff;
+    --good:#3ddc97; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#141a23,#11151c);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));}
+  .brand h1{font-size:18px;margin:0;font-weight:600;}
+  .brand span{color:var(--muted);font-size:12px;}
+  .tabs{display:flex;gap:6px;}
+  .tab{padding:8px 14px;border-radius:6px;font-size:13px;color:var(--muted);}
+  .tab.active{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+  .filters{display:flex;gap:10px;padding:14px 28px 0 28px;}
+  .chip{background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:20px;}
+  .chip.on{color:var(--accent);border-color:var(--accent);}
+  .grid{padding:18px 28px 28px 28px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .kpi{grid-column:span 3;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .kpi .value{font-size:24px;font-weight:700;margin-top:6px;}
+  .kpi .delta{font-size:12px;margin-top:4px;}
+  .delta.up{color:var(--good);} .delta.down{color:var(--bad);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .card h3{margin:0 0 10px 0;font-size:14px;font-weight:600;}
+  .card .sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .span4{grid-column:span 4;} .span6{grid-column:span 6;} .span8{grid-column:span 8;} .span12{grid-column:span 12;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);}
+  td{padding:6px 8px;border-bottom:1px solid #1c2330;}
+  .foot{padding:14px 28px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div><h1>a multinational retail group</h1><span>Sales &amp; Marketing Performance Dashboard</span></div>
+    </div>
+    <div class="tabs">
+      <div class="tab">Overview</div>
+      <div class="tab active">Sales</div>
+      <div class="tab">Customers</div>
+      <div class="tab">Marketing</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="chip on">FY2025</div>
+    <div class="chip">All Regions</div>
+    <div class="chip">All Categories</div>
+  </div>
+
+  <div class="grid">
+    <div class="kpi"><div class="label">Total Revenue</div><div class="value">$5.20M</div><div class="delta up">▲ 12.6% YoY</div></div>
+    <div class="kpi"><div class="label">Units Sold</div><div class="value">95,000</div><div class="delta up">▲ 8.4% YoY</div></div>
+    <div class="kpi"><div class="label">Avg Order Value</div><div class="value">$54.70</div><div class="delta up">▲ $1.90</div></div>
+    <div class="kpi"><div class="label">Marketing ROAS</div><div class="value">3.4x</div><div class="delta up">▲ 0.3x</div></div>
+
+    <div class="card span8">
+      <h3>Monthly Revenue: Current vs Prior Year</h3>
+      <div class="sub">a multinational retail group, FY2025 vs FY2024</div>
+      <canvas id="revTrend" style="max-height:280px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Revenue by Region</h3>
+      <canvas id="regionPie" style="max-height:280px;"></canvas>
+    </div>
+
+    <div class="card span4">
+      <h3>Revenue by Product Category</h3>
+      <canvas id="catBar" style="max-height:240px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Customer Segments (RFM)</h3>
+      <div class="sub">Share of active customer base</div>
+      <canvas id="segDonut" style="max-height:240px;"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Top Marketing Channels by ROAS</h3>
+      <table>
+        <tr><th>Channel</th><th>Spend</th><th>ROAS</th></tr>
+        <tr><td>Email</td><td>$104K</td><td style="color:#3ddc97">4.9x</td></tr>
+        <tr><td>Paid Social</td><td>$118K</td><td style="color:#3ddc97">4.2x</td></tr>
+        <tr><td>Search</td><td>$142K</td><td>3.1x</td></tr>
+        <tr><td>Display</td><td>$96K</td><td style="color:#ff6b6b">1.9x</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot">a multinational retail group — Power BI–style sales dashboard, prepared by the Growth Marketing &amp; Customer Insights Analytics teams.</div>
+
+<script>
+Chart.defaults.color = '#8b95a7';
+Chart.defaults.borderColor = '#2a3242';
+Chart.defaults.font.family = "Segoe UI, Arial, sans-serif";
+
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const cur = [82,79,88,91,95,99,96,100,107,115,136,150];
+const prior = [73,70,77,80,83,86,84,87,93,99,116,128];
+
+new Chart(document.getElementById('revTrend'), {
+  type:'line',
+  data:{labels:months, datasets:[
+    {label:'FY2025', data:cur, borderColor:'#ff6f3c', backgroundColor:'rgba(255,111,60,.15)', fill:true, tension:.35},
+    {label:'FY2024', data:prior, borderColor:'#8b95a7', borderDash:[5,4], fill:false, tension:.35},
+  ]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}, scales:{y:{ticks:{callback:v=>'$'+v+'K'}}}}
+});
+
+new Chart(document.getElementById('regionPie'), {
+  type:'pie',
+  data:{labels:['North','South','East','West','Central'], datasets:[{data:[620,780,910,1150,540], backgroundColor:['#3aa6ff','#3ddc97','#ffb02e','#ff6f3c','#a26bff']}]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}}
+});
+
+new Chart(document.getElementById('catBar'), {
+  type:'bar',
+  data:{labels:['Electronics','Home & Kitchen','Apparel','Sporting Goods','Beauty','Toys','Office Supplies'],
+        datasets:[{label:'Revenue ($K)', data:[1480,710,630,490,369,258,192], backgroundColor:'#3aa6ff'}]},
+  options:{plugins:{legend:{display:false}}, indexAxis:'y'}
+});
+
+new Chart(document.getElementById('segDonut'), {
+  type:'doughnut',
+  data:{labels:['Champions','Loyal','Potential Loyalist','New','At Risk','Lost'],
+        datasets:[{data:[14,18,16,12,22,18], backgroundColor:['#3ddc97','#3aa6ff','#ffb02e','#a26bff','#ff9f43','#ff6b6b']}]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}}
+});
+</script>
+</body>
+</html>

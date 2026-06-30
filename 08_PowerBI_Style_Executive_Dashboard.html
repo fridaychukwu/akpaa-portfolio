@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>the parent holding group — Executive Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#11151c; --panel:#171d27; --panel2:#1d2430; --border:#2a3242;
+    --text:#e8ecf2; --muted:#8b95a7; --accent:#ffb02e; --accent2:#3aa6ff;
+    --good:#3ddc97; --bad:#ff6b6b;
+    --font: 'Segoe UI', Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#141a23,#11151c);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));}
+  .brand h1{font-size:18px;margin:0;font-weight:600;}
+  .brand span{color:var(--muted);font-size:12px;}
+  .tabs{display:flex;gap:6px;}
+  .tab{padding:8px 14px;border-radius:6px;font-size:13px;color:var(--muted);cursor:default;}
+  .tab.active{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+  .grid{padding:22px 28px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .kpi{grid-column:span 2;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .kpi .value{font-size:24px;font-weight:700;margin-top:6px;}
+  .kpi .delta{font-size:12px;margin-top:4px;}
+  .delta.up{color:var(--good);} .delta.down{color:var(--bad);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .card h3{margin:0 0 10px 0;font-size:14px;font-weight:600;color:var(--text);}
+  .card .sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .span4{grid-column:span 4;} .span6{grid-column:span 6;} .span8{grid-column:span 8;} .span12{grid-column:span 12;}
+  canvas{max-height:260px;}
+  .filters{display:flex;gap:10px;padding:0 28px 6px 28px;}
+  .chip{background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:20px;}
+  .chip.on{color:var(--accent);border-color:var(--accent);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);}
+  td{padding:6px 8px;border-bottom:1px solid #1c2330;}
+  .foot{padding:14px 28px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div><h1>the parent holding group</h1><span>Corporate Strategy &amp; Analytics — Executive Dashboard</span></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Group Overview</div>
+      <div class="tab">Retail</div>
+      <div class="tab">Agribusiness</div>
+      <div class="tab">People</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="chip on">FY2025</div>
+    <div class="chip">All Divisions</div>
+    <div class="chip">All Regions</div>
+  </div>
+
+  <div class="grid">
+    <div class="kpi"><div class="label">Group Revenue</div><div class="value">$9.74M</div><div class="delta up">▲ 14.2% YoY</div></div>
+    <div class="kpi"><div class="label">Net Income</div><div class="value">$1.31M</div><div class="delta up">▲ 9.8% YoY</div></div>
+    <div class="kpi"><div class="label">Operating Margin</div><div class="value">17.6%</div><div class="delta up">▲ 1.1 pts</div></div>
+    <div class="kpi"><div class="label">Headcount</div><div class="value">3,420</div><div class="delta down">▼ 2.0% Turnover</div></div>
+    <div class="kpi"><div class="label">Agri Yield Index</div><div class="value">4.62 t/ha</div><div class="delta up">▲ 5.4%</div></div>
+    <div class="kpi"><div class="label">Marketing ROAS</div><div class="value">3.4x</div><div class="delta up">▲ 0.3x</div></div>
+
+    <div class="card span8">
+      <h3>Group Revenue by Division — Monthly Trend</h3>
+      <div class="sub">Retail, Agribusiness, and Corporate Services, FY2025</div>
+      <canvas id="revTrend"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Revenue Mix by Division</h3>
+      <div class="sub">Share of FY2025 group revenue</div>
+      <canvas id="divPie"></canvas>
+    </div>
+
+    <div class="card span4">
+      <h3>Revenue by Region</h3>
+      <div class="sub">All divisions combined</div>
+      <canvas id="regionBar"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Margin Trend</h3>
+      <div class="sub">Gross vs. Operating margin, quarterly</div>
+      <canvas id="marginLine"></canvas>
+    </div>
+    <div class="card span4">
+      <h3>Division Scorecard</h3>
+      <div class="sub">Key performance indicators by division</div>
+      <table>
+        <tr><th>Division</th><th>Revenue</th><th>Margin</th><th>YoY</th></tr>
+        <tr><td>Retail</td><td>$5.20M</td><td>21.4%</td><td style="color:#3ddc97">▲12.6%</td></tr>
+        <tr><td>Agribusiness</td><td>$3.45M</td><td>15.8%</td><td style="color:#3ddc97">▲18.9%</td></tr>
+        <tr><td>Corporate Services</td><td>$1.09M</td><td>9.2%</td><td style="color:#ff6b6b">▼1.4%</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot">the parent holding group — Power BI–style executive dashboard. Figures reflect the FY2025 consolidated analysis prepared by Corporate Strategy &amp; Analytics.</div>
+
+<script>
+Chart.defaults.color = '#8b95a7';
+Chart.defaults.borderColor = '#2a3242';
+Chart.defaults.font.family = "Segoe UI, Arial, sans-serif";
+
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const retail = [430,410,455,470,490,510,500,520,560,610,720,790];
+const agri = [240,235,260,300,340,360,330,310,355,400,420,395];
+const corp = [80,82,85,88,90,92,91,93,95,97,99,101];
+
+new Chart(document.getElementById('revTrend'), {
+  type:'line',
+  data:{labels:months, datasets:[
+    {label:'Retail', data:retail, borderColor:'#3aa6ff', backgroundColor:'rgba(58,166,255,.15)', fill:true, tension:.35},
+    {label:'Agribusiness', data:agri, borderColor:'#3ddc97', backgroundColor:'rgba(61,220,151,.12)', fill:true, tension:.35},
+    {label:'Corporate Services', data:corp, borderColor:'#ffb02e', backgroundColor:'rgba(255,176,46,.1)', fill:true, tension:.35},
+  ]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}, scales:{y:{ticks:{callback:v=>'$'+v+'k'}}}}
+});
+
+new Chart(document.getElementById('divPie'), {
+  type:'doughnut',
+  data:{labels:['Retail','Agribusiness','Corporate Services'], datasets:[{data:[5.20,3.45,1.09], backgroundColor:['#3aa6ff','#3ddc97','#ffb02e']}]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}}
+});
+
+new Chart(document.getElementById('regionBar'), {
+  type:'bar',
+  data:{labels:['North','South','East','West','Central'], datasets:[{label:'Revenue ($M)', data:[1.62,2.05,2.38,2.95,1.41], backgroundColor:'#3aa6ff'}]},
+  options:{plugins:{legend:{display:false}}, indexAxis:'y'}
+});
+
+new Chart(document.getElementById('marginLine'), {
+  type:'line',
+  data:{labels:['Q1','Q2','Q3','Q4'], datasets:[
+    {label:'Gross Margin', data:[54.2,55.6,56.8,58.1], borderColor:'#ffb02e', tension:.3},
+    {label:'Operating Margin', data:[15.8,16.5,18.2,19.4], borderColor:'#3ddc97', tension:.3},
+  ]},
+  options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10}}}, scales:{y:{ticks:{callback:v=>v+'%'}}}}
+});
+</script>
+</body>
+</html>
